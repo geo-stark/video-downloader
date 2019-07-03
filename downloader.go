@@ -205,7 +205,7 @@ func grabVideo(URL string) error {
 	return nil
 }
 
-func main12() {
+func qqqgrabVideo() {
 	/*	data, err := ioutil.ReadFile("data/master.json")
 		if err != nil {
 			log.Fatal(err)

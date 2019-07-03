@@ -37,36 +37,6 @@
 
 <script>
 
-function AddJob() {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-		//alert(this.readyState)
-        if (this.readyState == 4 && this.status == 200) {
-            alert(this.responseText);
-        }
-    };
-
- 	var name = document.getElementById("name").value;
-	var link = document.getElementById("link").value;
-
-    xhttp.open("POST", "/jobs?name=" + name + "&link=" + link, false);
-    xhttp.setRequestHeader("Content-type", "application/json");
-    xhttp.send("");
-}
-
-function GetJobs() {
-	var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-		//alert(this.readyState)
-        if (this.readyState == 4 && this.status == 200) {
-			document.getElementById("content").innerHTML = this.responseText;
-        }
-    };
-
-    xhttp.open("GET", "/jobs", false);
-    xhttp.setRequestHeader("Content-type", "application/json");
-    xhttp.send("");
-}
 </script>
 
 <style>

@@ -10,9 +10,10 @@
 	<meta name="author" content="">
 
 	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<!-- <script src="/js/main.js"></script> -->
 </head>
 
-<body>
+<body onload="Poll()"> 
 <!--		<svg class="bd-placeholder-img mr-2 rounded" width="16" height="16" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 32x32"><rect width="100%" height="100%" fill="yellow"/></svg>-->
 
 	<nav class="navbar navbar-expand-lg static-top navbar-dark bg-dark">
@@ -24,45 +25,25 @@
 		<form class="needs-validation">
 			<div class="row">
 				<div class="col-md-3 mb-3">
-					<label for="firstName">Name</label>
-					<input type="text" class="form-control" id="firstName" placeholder="" value="" required>
+					<label for="name">Name</label>
+					<input type="text" class="form-control" id="name" placeholder="Name" value="" required>
 					<div class="invalid-feedback">
-						Valid first name is required.
+						Valid name is required.
 					</div>
 				</div>
 				<div class="col-md-9 mb-3">
-					<label for="lastName">Link</label>
-					<input type="text" class="form-control" id="lastName" placeholder="" value="" required>
+					<label for="link">Link</label>
+					<input type="text" class="form-control" id="link" placeholder="Link" value="" required>
 					<div class="invalid-feedback">
-						Valid last name is required.
+						Valid link name is required.
 					</div>
 				</div>
 			</div>
-			<button type="submit" class="btn btn-primary" onclick="GetJobs()">Add job</button>
+			<button type="submit" class="btn btn-primary" onclick="AddJob()">Add job</button>
 		</form>
 
 	</div>
-	<!--
 
-	<div class="container" >
-		<form>
-				<fieldset>
-					<legend>New job</legend>
-				  <div class="form-group">
-					<label for="exampleInputEmail1">Email address</label>
-					<input class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" type="email">
-				  </div>
-				  <div class="form-group">
-					<label for="exampleInputPassword1">Password</label>
-					<input class="form-control" id="exampleInputPassword1" placeholder="Password" type="password">
-				  </div>
-				  </fieldset>
-				  <button type="submit" class="btn btn-primary">Add job</button>
-				</fieldset>
-			  </form>
-
-	  </div>
--->
 	<br>
 
 	<div class="container">
@@ -70,103 +51,96 @@
 		<table class="table table-hover">
 			<thead>
 				<tr>
-					<th scope="col">Number</th>
-					<th scope="col">Name</th>
-					<th scope="col">Status</th>
-					<th scope="col">Duration</th>
-					<th scope="col">Action</th>
+					<th scope="col" class="col-md-1">Number</th>
+					<th scope="col" class="col-md-3">Name</th>
+					<th scope="col" class="col-md-2">Status</th>
+					<th scope="col" class="col-md-2">Duration</th>
 				</tr>
 			</thead>
-			<tbody>
-				<tr class="table-active">
-					<th scope="row">1</th>
-					<td>Column content</td>
-					<td>Column content</td>
-					<td>Column content</td>
-				</tr>
-				<tr>
-					<th scope="row">2</th>
-					<td>Column content</td>
-					<td>Column content</td>
-					<td>Column content</td>
-				</tr>
-				<tr class="table-active">
-					<th scope="row">3</th>
-					<td>Column content</td>
-					<td>Column content</td>
-					<td>Column content</td>
-				</tr>
-				<tr>
-					<th scope="row">4</th>
-					<td>Column content</td>
-					<td>Column content</td>
-					<td>Column content</td>
-				</tr>
-				<tr class="table-active">
-					<th scope="row">5</th>
-					<td>Column content</td>
-					<td>Column content</td>
-					<td>Column content</td>
-				</tr>
-				<tr>
-					<th scope="row">6</th>
-					<td>Column content</td>
-					<td>Column content</td>
-					<td>Column content</td>
-				</tr>
-				<tr class="table-active">
-					<th scope="row">7</th>
-					<td>Column content</td>
-					<td>Column content</td>
-					<td>Column content</td>
-				</tr>
-				<tr>
-					<th scope="row">8</th>
-					<td>Column content</td>
-					<td>Column content</td>
-					<td>Column content</td>
-				</tr>
-				<tr class="table-active">
-					<th scope="row">9</th>
-					<td>Column content</td>
-					<td>Column content</td>
-					<td>Column content</td>
-				</tr>
-				<tr>
-					<th scope="row">11</th>
-					<td>Column content</td>
-					<td>Column content</td>
-					<td>Column content</td>
-				</tr>
-				<tr class="table-active">
-					<th scope="row">12</th>
-					<td>Column content</td>
-					<td>Column content</td>
-					<td>Column content</td>
-				</tr>
-				<tr>
-					<th scope="row">13</th>
-					<td>Column content</td>
-					<td>Column content</td>
-					<td>Column content</td>
-				</tr>
-
+			<tbody id="tbody">
 			</tbody>
 		</table>
 	</div>
 
-
 </body>
 <script>
 
-	function GetJobs() {
-		var inpObj = document.getElementById("firstName");
-		if (!inpObj.checkValidity()) {
-			//document.getElementById("demo").innerHTML = inpObj.validationMessage;
-		}
+function AddJob() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+		//alert(this.readyState)
+        if (this.readyState == 4 && this.status != 200) {
+            alert(this.responseText);
+        }
+    };
 
-		console.log('asdas');
+ 	var name = document.getElementById("name").value;
+	var link = document.getElementById("link").value;
+
+    xhttp.open("POST", "/jobs?name=" + name + "&link=" + link, false);
+    xhttp.setRequestHeader("Content-type", "application/json");
+    xhttp.send("");
+}
+
+function GetJobs() {
+	var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+		//alert(this.readyState)
+        if (this.readyState == 4 && this.status == 200) {
+			fillJobTable(this.responseText)
+        }
+    };
+
+    xhttp.open("GET", "/jobs", false);
+    xhttp.setRequestHeader("Content-type", "application/json");
+    xhttp.send("");
+}
+
+function GetJobs1() {
+	var inpObj = document.getElementById("firstName");
+	if (!inpObj.checkValidity()) {
+		//document.getElementById("demo").innerHTML = inpObj.validationMessage;
 	}
-</script>
+	console.log('asdas');
+}
 
+function Poll() {
+	GetJobs()
+	setTimeout("Poll()", 1000)
+}
+
+function fillJobTable(text) {
+	var obj = JSON.parse(text); 
+	var odd = true
+	var s = ""
+	for(var n in obj) {
+		if (odd) 
+			s += '<tr class="table-active">'
+		else
+			s += '<tr>'
+		odd = !odd
+		s += '<th scope="row">' + obj[n].id + '</th>'
+		s += '<td>' + obj[n].name + '</td>'
+		s += '<td>' + getStatus(obj[n].status) + '</td>'
+		s += '<td>' + obj[n].duration + '</td>'
+		s += '</tr>'
+	}
+	document.getElementById("tbody").innerHTML = s;
+ }
+
+function getStatus(status) {
+	switch (status){
+		case 0: return "queued";
+		case 1: return "in progress";
+		case 2: return "done";
+		case 3: return "error";
+	}
+	return ""
+}
+					
+	
+
+
+
+</script>
 </html>
