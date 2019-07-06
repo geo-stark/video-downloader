@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/goware/urlx"
@@ -60,8 +61,28 @@ type Clip struct {
 	Audio []Audio `json:"audio"`
 }
 
-const PrefferedVideoWidth = 1280
-const PrefferedAudioRate = 48000
+type Options struct {
+	PrefferedVideoWidth int
+	PrefferedAudioRate  int
+	WorkingDir          string
+}
+
+type VideoGrabber struct {
+	link       string
+	name       string
+	id         string
+	resolution string
+	duration   int
+	clip       Clip
+	opts       Options
+
+	videoIndex int
+	audioIndex int
+	file       string
+}
+
+//const PrefferedVideoWidth = 1280
+//const PrefferedAudioRate = 48000
 
 func downloadURL(URL string) ([]byte, error) {
 	log.Printf("getting %v", URL)
@@ -126,93 +147,102 @@ func normalizeURL(rawURL string) string {
 	return clenURL
 }
 
-func grabVideo(URL string) error {
-	log.Print("process url:", URL)
+func (this *VideoGrabber) SetOptions(opts Options) {
+	this.opts = opts
+}
 
-	baseURL := URL[0:strings.LastIndex(URL, "/")]
+func (this *VideoGrabber) OpenLink(link, name string) {
+	this.link = link
+	this.name = name
+}
 
-	data, err := downloadURL(URL)
+func (this *VideoGrabber) FetchInfo() error {
+	log.Print("process url:", this.link)
+
+	data, err := downloadURL(this.link)
 	if err != nil {
 		return err
 	}
 
-	var clip Clip
-	err = json.Unmarshal(data, &clip)
+	err = json.Unmarshal(data, &this.clip)
 	if err != nil {
 		return err
 	}
 
 	audioIndex := -1
 	audioMaxRateIndex := 0
-	for index, i := range clip.Audio {
-		if i.SampleRate == PrefferedAudioRate {
+	for index, i := range this.clip.Audio {
+		if i.SampleRate == this.opts.PrefferedAudioRate {
 			audioIndex = index
 			break
 		}
-		if i.SampleRate > clip.Audio[audioMaxRateIndex].SampleRate {
+		if i.SampleRate > this.clip.Audio[audioMaxRateIndex].SampleRate {
 			audioMaxRateIndex = index
 		}
 	}
-	if audioIndex < 0 && len(clip.Audio) > 0 {
+	if audioIndex < 0 && len(this.clip.Audio) > 0 {
 		audioIndex = audioMaxRateIndex
 	}
 
 	videoIndex := -1
 	videoMaxWidthIndex := 0
-	for index, i := range clip.Video {
-		if i.Width == PrefferedVideoWidth {
+	for index, i := range this.clip.Video {
+		if i.Width == this.opts.PrefferedVideoWidth {
 			videoIndex = index
 			break
 		}
-		if i.Width > clip.Video[videoMaxWidthIndex].Width {
+		if i.Width > this.clip.Video[videoMaxWidthIndex].Width {
 			videoMaxWidthIndex = index
 		}
 	}
-	if videoIndex < 0 && len(clip.Video) > 0 {
+	if videoIndex < 0 && len(this.clip.Video) > 0 {
 		videoIndex = videoMaxWidthIndex
 	}
 
-	log.Printf("clip: %v", clip.ID)
+	this.audioIndex = audioIndex
+	this.videoIndex = videoIndex
+
+	this.duration = int(this.clip.Video[videoIndex].Duration * 1000)
+	this.resolution = fmt.Sprintf("%vx%v",
+		this.clip.Video[videoIndex].Width, this.clip.Video[videoIndex].Height)
+
+	log.Printf("clip: %v", this.clip.ID)
 	log.Printf("audio index: %v", audioIndex)
 	log.Printf("video index: %v", videoIndex)
 
+	return nil
+}
+
+func (this *VideoGrabber) FetchData() error {
+	basePath := this.opts.WorkingDir
+	if basePath != "" && basePath[len(basePath)-1] != '/' {
+		basePath += "/"
+	}
+
+	baseURL := this.link[0:strings.LastIndex(this.link, "/")]
 	url := ""
 
-	video := clip.Video[videoIndex]
-	videoFile := clip.ID + ".video" + path.Ext(video.Segments[0].URL)
-	url = normalizeURL(baseURL + "/" + clip.URL + video.URL)
+	video := this.clip.Video[this.videoIndex]
+	videoFile := basePath + this.clip.ID + ".video" + path.Ext(video.Segments[0].URL)
+	url = normalizeURL(baseURL + "/" + this.clip.URL + video.URL)
 	if err := downloadSegments(url,
 		video.Segments,
 		video.InitSegment,
 		videoFile); err != nil {
 		return err
 	}
-	audio := clip.Audio[audioIndex]
-	audioFile := clip.ID + ".audio" + path.Ext(audio.Segments[0].URL)
-	url = normalizeURL(baseURL + "/" + clip.URL + audio.URL)
+	audio := this.clip.Audio[this.audioIndex]
+	audioFile := basePath + this.clip.ID + ".audio" + path.Ext(audio.Segments[0].URL)
+	url = normalizeURL(baseURL + "/" + this.clip.URL + audio.URL)
 	if err := downloadSegments(url,
 		audio.Segments,
 		audio.InitSegment,
 		audioFile); err != nil {
 		return err
 	}
-
-	if err = muxAV(videoFile, audioFile, clip.ID+".mkv"); err != nil {
+	this.file, _ = filepath.Abs(basePath + this.name + ".mkv")
+	if err := muxAV(videoFile, audioFile, this.file); err != nil {
 		return err
 	}
-	log.Print("done")
-
 	return nil
-}
-
-func qqqgrabVideo() {
-	/*	data, err := ioutil.ReadFile("data/master.json")
-		if err != nil {
-			log.Fatal(err)
-		}
-	*/
-	if err := grabVideo("https://61skyfiregce-vimeo.akamaized.net/exp=1562016350~acl=%2F336337660%2F%2A~hmac=e007cdbfaa3a196d785457d29e02dccf0dfe6a63be99254edd1e86e6a9e4be0c/336337660/sep/video/1332495808,1332495803,1332495801,1332495798,1332495794/master.json?base64_init=1"); err != nil {
-		log.Fatal(err)
-	}
-
 }
