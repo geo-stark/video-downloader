@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<!-- /file/open  -->
-
 <svg class="symbol"><symbol id="yellow">
 	<rect width="100%" height="100%" fill="yellow" stroke="black" />
 </symbol></svg>
@@ -17,41 +15,41 @@
 </symbol></svg>
 		
 <head>
-	<title>Vimeo video downloader</title>
+	<title>Video downloader</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+<!--
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+-->
 </head>
 
 <body onload="Poll()">
 
-	<div class="container login-box">
+	<div class="container common">
 		<table class="container"><tr><td class="align-middle text-left">
 			<p>
-						<h2 class="align-middle" style=" font-family: 'Source Sans Pro', sans-serif;
-						font-size: 24px;
-						font-weight: 600;
-						" >Vimeo video downloader</h2>
-						</p>
-
-		</td><td class="text-right small align-middle version-color" >version 1.0
-								
-		</td></tr>
-		</table>
+			<h2 class="align-middle" style=" font-family: 'Source Sans Pro', sans-serif;
+			font-size: 24px;
+			font-weight: 600;
+			">Video downloader</h2>
+			</p>
+		</td><td class="text-right small align-middle version-color">
+			version 1.0
+		</td></tr></table>
 	</div>
 
-	<div class="container login-box">
-
+	<div class="container common">
 		<div class="card ">
 			<div class="card-body">
-
-				<form class="needs-validation">
+					<p class="version-color">Install "Flash Video Downloader" Firefox addon to get link</p>
+					<form class="needs-validation">
 					<div class="row">
 						<div class="col-md-3 mb-3">
-							<label class="font-weight-bold" for="firstName">File name</label>
+							<label class="font-weight-bold" for="name">File name</label>
 							<input type="text" class="form-control" id="name" placeholder="Name" value="" required>
 
 							<div class="invalid-feedback">
@@ -59,7 +57,7 @@
 							</div>
 						</div>
 						<div class="col-md-9 mb-3">
-							<label class="font-weight-bold" for="lastName">Link</label>
+							<label class="font-weight-bold" for="link">Video link</label>
 							<input type="text" class="form-control" id="link" placeholder="Link" value="" required>
 							<div class="invalid-feedback">
 								Valid last name is required.
@@ -79,30 +77,26 @@
 
 	<br>
 
-	<div class="container login-box">
-
+	<div class="container common">
 		<table class="table table-striped table-curved">
 			<thead class="">
 					<tr>
 							<th scope="col">#</th>
 							<th scope="col">Name</th>
 							<th scope="col">Status</th>
-							<th scope="col">Info</th>
+							<th scope="col">Information</th>
 							<th scope="col">Date</th>
 							<th scope="col">Action</th>
 						</tr>
 						</thead>
 			<tbody id="tbody">
-
-								
 			</tbody>
 		</table>
 	</div>
-
 </body>
 <style>
 
-	.login-box{
+	.common{
 	min-width:600px;
 	}
 
@@ -150,7 +144,7 @@
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status != 200) {
-				alert(this.responseText);
+				console.log("request error " + this.status);
 				return
 			}
 		};
@@ -172,10 +166,11 @@
 	}
 
 	function AddJob() {
-		var name = document.getElementById("name").value;
-		var link = document.getElementById("link").value;
+		var name = encodeURIComponent(document.getElementById("name").value);
+		var link = encodeURIComponent(document.getElementById("link").value);
 
 		request("POST", "/jobs?name=" + name + "&link=" + link)
+		return false
 	}
 	
 	function GetJobs() {
@@ -186,16 +181,17 @@
 		GetJobs()
 		setTimeout("Poll()", 1000)
 	}
-	
+	//function append()
+
 	function fillJobTable(text) {
-		if (text == "")
-		{
+		if (text == "")	{
 			document.getElementById("tbody").innerHTML = "";
 			return
 		}
-		var obj = JSON.parse(text); 
-		var s = ""
+		var obj = JSON.parse(text);
+		var content = ""
 		for(var n in obj) {
+			var s = ""
 			s += '<tr>'
 			s += '<th scope="row">' + obj[n].id + '</th>'
 			s += '<td>'
@@ -206,18 +202,23 @@
 			s += '</td>'
 			
 			s += '<td>' + getStatus(obj[n].status) + '</td>'
-			var info = ""
+			var info = []
 			if (obj[n].resolution != "")
-				info = obj[n].resolution + ', ' + obj[n].length + ', ' + obj[n].filesize 
-			s += '<td>' + info +  '</td>'
+				info .push(obj[n].resolution)
+			if (obj[n].length != "")
+				info.push(obj[n].length)
+			if (obj[n].filesize != "")
+				info.push(obj[n].filesize)
+			s += '<td>' + info.join(", ") +  '</td>'
 			s += '<td>' + obj[n].timestamp + '</td>'
 			s += '<td style="width: 10%">';
 			if (obj[n].status != 1)
 				s += '<button type="button" class="btn btn-secondary" onclick="RemoveJob(' + obj[n].id + ')">Remove</button>'
 			s += '</td>'
 			s += '</tr>'
+			content = s + content
 		}
-		document.getElementById("tbody").innerHTML = s;
+		document.getElementById("tbody").innerHTML = content;
 	 }
 	
 	function getStatus(status) {
@@ -240,45 +241,3 @@
 	}
 	</script>
 </html>
-
-
-<!-- 
-					<tr>
-							<th scope="row">1</th>
-							<td>
-									
-								
-								<a title="Click to open in player"
-								href="file:///dsd/sdf/sdf" onclick="MyFunction(this);return false;">the way of live 22</a></td>
-
-							<td><svg class="mr-2" width="16" height="16" ><use href="#grey"/></svg>pending</td>
-							<td>1920x1080, 5Min, 180Mb</td>
-							<td>02.07.2019 14:15</td>
-							<td>Column content</td>
-						</tr>
-						<tr>
-								<th scope="row">2</th>
-								<td>Column content</td>
-								<td><svg class="mr-2" width="16" height="16" ><use href="#green"/></svg>done</td>
-								<td>Column content</td>
-								<td>Column content</td>
-								<td>Column content</td>
-							</tr>
-							<tr>
-									<th scope="row">3</th>
-									<td>Column content</td>
-									<td>Column content</td>
-									<td>Column content</td>
-									<td>Column content</td>
-									<td>Column content</td>
-								</tr>
-
-
-									function GetJobs1() {
-		var inpObj = document.getElementById("firstName");
-		if (!inpObj.checkValidity()) {
-			//document.getElementById("demo").innerHTML = inpObj.validationMessage;
-		}
-		console.log('asdas');
-	}
--->

@@ -1,14 +1,5 @@
 package main
 
-// rest:
-// post jobs/add(link), return job id
-// get  job/get(id), return job info
-// get  jobs(), return job id list
-
-// arguments:
-// --port
-// --dir -d
-
 import (
 	"encoding/json"
 	"fmt"
@@ -22,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"code.cloudfoundry.org/bytefmt"
+	"./libs/logger"
 	"github.com/gorilla/mux"
 	"github.com/pborman/getopt/v2"
 )
@@ -30,7 +21,7 @@ import (
 const Version = 1
 
 const MaxQueueSize = 50
-const WorkerCount = 5
+const WorkerCount = 3
 const DefaultPort = 8080
 
 type JobStatus int
@@ -62,7 +53,7 @@ type Result struct {
 }
 
 var Jobs map[int]Job = make(map[int]Job)
-var JobCounter int
+var JobCounter int = 1
 var Lock sync.Mutex
 var Channel = make(chan int, MaxQueueSize)
 var Port = DefaultPort
@@ -142,19 +133,10 @@ func addJob(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&res)
 }
 
-func durationfmt(duration_ms int) string {
-	name := []string{"MS", "Sec", "Min", "Hours"}
-	div := []int{1000, 60, 60, 60}
-	//var res string
-	var index, n int
-
-	for index, n = range div {
-		if int(duration_ms) < n {
-			break
-		}
-		duration_ms = duration_ms / n
-	}
-	return strconv.Itoa(duration_ms) + name[index]
+func copyItemInfo(item *Job, grabber *VideoGrabber) {
+	item.Resolution = grabber.resolution
+	item.Length = grabber.duration
+	item.FileSize = grabber.fileSize
 }
 
 func grab(item *Job) {
@@ -167,12 +149,11 @@ func grab(item *Job) {
 	grabber.OpenLink(item.Link, item.Name)
 	if err := grabber.FetchInfo(); err != nil {
 		item.Status = Error
-		log.Printf("fetch info failed %v %v", err, item.Link)
+		log.Printf("fetch info failed, error %v, link '%v'", err, item.Link)
 		return
 	}
 	item.Date = time.Now().Format("15:04 02.01.2006")
-	item.Resolution = grabber.resolution
-	item.Length = durationfmt(grabber.duration)
+	copyItemInfo(item, &grabber)
 
 	if err := grabber.FetchData(); err != nil {
 		item.Status = Error
@@ -180,9 +161,7 @@ func grab(item *Job) {
 		return
 	}
 	item.File = grabber.file
-	if info, err := os.Stat(item.File); err == nil {
-		item.FileSize = bytefmt.ByteSize(uint64(info.Size()))
-	}
+	copyItemInfo(item, &grabber)
 	item.Status = Done
 }
 
@@ -220,6 +199,11 @@ func main() {
 	Port = *argPort
 	Dir = *argDir
 
+	var logInstance logger.Logger
+	logInstance.SetFileDefault()
+	log.SetOutput(&logInstance)
+	defer logInstance.Close()
+
 	showHint()
 
 	var wg sync.WaitGroup
@@ -244,3 +228,8 @@ func main() {
 	log.Print("server started...")
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", Port), router))
 }
+
+// TODO:
+// add pid file protection
+// cancel item
+// log to file
