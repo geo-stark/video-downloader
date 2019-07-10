@@ -1,56 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<svg class="symbol"><symbol id="yellow">
-	<rect width="100%" height="100%" fill="yellow" stroke="black" />
-</symbol></svg>
-<svg class="symbol"><symbol id="red">
-	<rect width="100%" height="100%" fill="red" stroke="black" />
-</symbol></svg>
-<svg class="symbol"><symbol id="green">
-	<rect width="100%" height="100%" fill="green" stroke="black" />
-</symbol></svg>
-<svg class="symbol"><symbol id="grey">
-	<rect width="100%" height="100%" fill="grey" stroke="black" />
-</symbol></svg>
-		
+<svg class="symbol">
+	<symbol id="yellow">
+		<rect width="100%" height="100%" fill="yellow" stroke="black" />
+	</symbol>
+</svg>
+<svg class="symbol">
+	<symbol id="red">
+		<rect width="100%" height="100%" fill="red" stroke="black" />
+	</symbol>
+</svg>
+<svg class="symbol">
+	<symbol id="green">
+		<rect width="100%" height="100%" fill="green" stroke="black" />
+	</symbol>
+</svg>
+<svg class="symbol">
+	<symbol id="grey">
+		<rect width="100%" height="100%" fill="grey" stroke="black" />
+	</symbol>
+</svg>
+
 <head>
 	<title>Video downloader</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="/css/bootstrap.min.css">
-<!--
+	<!--	<link rel="stylesheet" href="/css/bootstrap.min.css"> -->
+
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
--->
 </head>
 
 <body onload="Poll()">
 
 	<div class="container common">
-		<table class="container"><tr><td class="align-middle text-left">
-			<p>
-			<h2 class="align-middle" style=" font-family: 'Source Sans Pro', sans-serif;
-			font-size: 24px;
-			font-weight: 600;
-			">Video downloader</h2>
-			</p>
-		</td><td class="text-right small align-middle version-color">
-			version 1.0
-		</td></tr></table>
+		<table class="container">
+			<tr>
+				<td class="align-middle text-left">
+					<p>
+						<h2 class="align-middle header">Video downloader</h2>
+					</p>
+				</td>
+				<td class="text-right small align-middle">
+					<a onclick="showAbout()" class="version-color" href="#">version 1.0</a> </td>
+			</tr>
+		</table>
 	</div>
-
 	<div class="container common">
-		<div class="card ">
+		<div class="card">
 			<div class="card-body">
-					<p class="version-color">Install "Flash Video Downloader" Firefox addon to get link</p>
-					<form class="needs-validation">
+				<p class="version-color">Install "Flash Video Downloader" Firefox addon to get link</p>
+
+				<form class="needs-validation">
 					<div class="row">
 						<div class="col-md-3 mb-3">
 							<label class="font-weight-bold" for="name">File name</label>
-							<input type="text" class="form-control" id="name" placeholder="Name" value="" required>
+							<input type="text" class="form-control" id="name" placeholder="Name" required>
 
 							<div class="invalid-feedback">
 								Valid first name is required.
@@ -58,18 +66,24 @@
 						</div>
 						<div class="col-md-9 mb-3">
 							<label class="font-weight-bold" for="link">Video link</label>
-							<input type="text" class="form-control" id="link" placeholder="Link" value="" required>
+							<input type="text" class="form-control" id="link" placeholder="Link" required>
 							<div class="invalid-feedback">
 								Valid last name is required.
 							</div>
 						</div>
 					</div>
+				
 					<div class="d-flex">
-					<div class="pr-2">
-					<button type="submit" class="btn btn-secondary" onclick="AddJob()">Add download</button>
-				</div><div class="pr-2">
-					<button type="button" class="btn btn-secondary" onclick="OpenWorkingFolder()">Open working folder</button>
-				</div></div>
+						<div class="pr-2">
+							<button type="submit" class="btn btn-secondary" onclick="AddJob()">
+								Add download</button>
+						</div>
+						<div class="pr-2">
+							<button type="button" class="btn btn-secondary" onclick="OpenWorkingFolder()">
+								Open working folder</button>
+						</div>
+					</div>
+
 				</form>
 			</div>
 		</div>
@@ -80,28 +94,58 @@
 	<div class="container common">
 		<table class="table table-striped table-curved">
 			<thead class="">
-					<tr>
-							<th scope="col">#</th>
-							<th scope="col">Name</th>
-							<th scope="col">Status</th>
-							<th scope="col">Information</th>
-							<th scope="col">Date</th>
-							<th scope="col">Action</th>
-						</tr>
-						</thead>
+				<tr>
+					<th scope="col">#</th>
+					<th scope="col">Name</th>
+					<th scope="col">Status</th>
+					<th scope="col">Information</th>
+					<th scope="col">Date</th>
+					<th scope="col">Action</th>
+				</tr>
+			</thead>
 			<tbody id="tbody">
 			</tbody>
 		</table>
 	</div>
+
+
+	<div class="modal fade" tabindex="-1" role="dialog" id="modalAbout">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title text-center">About</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body text-center">
+					Created by <a href="mailto:george-u@yandex.ru">George</a> at 2019
+				</div>
+
+			</div>
+		</div>
+	</div>
+
 </body>
 <style>
-
-	.common{
-	min-width:600px;
+	.header {
+		font-family: 'Source Sans Pro', sans-serif;
+		font-size: 24px;
+		font-weight: 600;
 	}
 
-	.version-color { color:#A8A8A8 }
-	.symbol { display: none; }
+	.common {
+		min-width: 600px;
+	}
+
+	.version-color {
+		color: #A8A8A8
+	}
+
+	.symbol {
+		display: none;
+	}
+
 	.table-curved {
 		border-collapse: separate;
 		border-spacing: 0;
@@ -142,13 +186,13 @@
 <script>
 	function request(method, url, send, receiver) {
 		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
+		xhttp.onreadystatechange = function () {
 			if (this.readyState == 4 && this.status != 200) {
 				console.log("request error " + this.status);
 				return
 			}
 		};
-		xhttp.onload = function() {
+		xhttp.onload = function () {
 			if (receiver != null)
 				receiver(this.responseText)
 		}
@@ -172,11 +216,11 @@
 		request("POST", "/jobs?name=" + name + "&link=" + link)
 		return false
 	}
-	
+
 	function GetJobs() {
 		request("GET", "/jobs", "", fillJobTable)
 	}
-	
+
 	function Poll() {
 		GetJobs()
 		setTimeout("Poll()", 1000)
@@ -184,32 +228,32 @@
 	//function append()
 
 	function fillJobTable(text) {
-		if (text == "")	{
+		if (text == "") {
 			document.getElementById("tbody").innerHTML = "";
 			return
 		}
 		var obj = JSON.parse(text);
 		var content = ""
-		for(var n in obj) {
+		for (var n in obj) {
 			var s = ""
 			s += '<tr>'
 			s += '<th scope="row">' + obj[n].id + '</th>'
 			s += '<td>'
 			if (obj[n].status == 2)
-				s += '<a href="file://' + obj[n].file + '" onclick="openFile(this)">' + obj[n].name +'</a>'
+				s += '<a href="file://' + obj[n].file + '" onclick="openFile(this)">' + obj[n].name + '</a>'
 			else
 				s += obj[n].name
 			s += '</td>'
-			
+
 			s += '<td>' + getStatus(obj[n].status) + '</td>'
 			var info = []
 			if (obj[n].resolution != "")
-				info .push(obj[n].resolution)
+				info.push(obj[n].resolution)
 			if (obj[n].length != "")
 				info.push(obj[n].length)
 			if (obj[n].filesize != "")
 				info.push(obj[n].filesize)
-			s += '<td>' + info.join(", ") +  '</td>'
+			s += '<td>' + info.join(", ") + '</td>'
 			s += '<td>' + obj[n].timestamp + '</td>'
 			s += '<td style="width: 10%">';
 			if (obj[n].status != 1)
@@ -219,10 +263,10 @@
 			content = s + content
 		}
 		document.getElementById("tbody").innerHTML = content;
-	 }
-	
+	}
+
 	function getStatus(status) {
-		switch (status){
+		switch (status) {
 			case 0: return '<svg class="mr-2" width="16" height="16" ><use href="#grey"/></svg>queued';
 			case 1: return '<svg class="mr-2" width="16" height="16" ><use href="#yellow"/></svg>in progress';
 			case 2: return '<svg class="mr-2" width="16" height="16" ><use href="#green"/></svg>success';
@@ -239,5 +283,10 @@
 		request("GET", "/folder")
 		return false
 	}
-	</script>
+	function showAbout() {
+		$('#modalAbout').modal('show');
+		return false;
+	}
+</script>
+
 </html>

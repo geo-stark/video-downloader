@@ -59,6 +59,17 @@ var Channel = make(chan int, MaxQueueSize)
 var Port = DefaultPort
 var Dir = "data"
 
+func checkCommandExists() {
+	commands := []string{"ffmpeg", "zenity", "xdg-open", "caja", "notify-send"}
+
+	for _, item := range commands {
+		cmd := exec.Command("sh", "-c", "hash "+item)
+		if cmd.Run() != nil {
+			log.Fatalf("required command %s not found\n", item)
+		}
+	}
+}
+
 func showHint() {
 	//body := fmt.Sprintf(`Download server page: <a href="http://localhost:%v">localhost:%v</a>`, Port, Port)
 	body := fmt.Sprintf(`application page: http://localhost:%v`, Port)
@@ -199,6 +210,8 @@ func main() {
 	Port = *argPort
 	Dir = *argDir
 
+	checkCommandExists()
+
 	var logInstance logger.Logger
 	logInstance.SetFileDefault()
 	log.SetOutput(&logInstance)
@@ -232,4 +245,3 @@ func main() {
 // TODO:
 // add pid file protection
 // cancel item
-// log to file
