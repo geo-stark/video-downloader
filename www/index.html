@@ -2,23 +2,23 @@
 <html lang="en">
 
 <svg class="symbol">
-	<symbol id="yellow">
-		<rect width="100%" height="100%" fill="yellow" stroke="black" />
+	<symbol id="yellow" viewBox="0 0 16 16">
+		<rect width="100%" height="100%" fill="yellow" stroke="black" stroke-width="1" />
 	</symbol>
 </svg>
 <svg class="symbol">
-	<symbol id="red">
-		<rect width="100%" height="100%" fill="red" stroke="black" />
+	<symbol id="red" viewBox="0 0 16 16">
+		<rect width="100%" height="100%" fill="red" stroke="black" stroke-width="1" />
 	</symbol>
 </svg>
-<svg class="symbol">
-	<symbol id="green">
-		<rect width="100%" height="100%" fill="green" stroke="black" />
+<svg class="symbol" width="16" height="16">
+	<symbol id="green" viewBox="0 0 16 16">
+		<rect width="100%" height="100%" fill="green" stroke="black" stroke-width="1" />
 	</symbol>
 </svg>
-<svg class="symbol">
+<svg class="symbol" viewBox="0 0 16 16">
 	<symbol id="grey">
-		<rect width="100%" height="100%" fill="grey" stroke="black" />
+		<rect width="100%" height="100%" fill="grey" stroke="black" stroke-width="1" />
 	</symbol>
 </svg>
 
@@ -34,7 +34,7 @@
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </head>
 
-<body onload="Poll()">
+<body onload="init()">
 
 	<div class="container common">
 		<table class="container">
@@ -52,38 +52,67 @@
 	<div class="container common">
 		<div class="card">
 			<div class="card-body">
-				<p class="version-color">Install "Flash Video Downloader" Firefox addon to get link</p>
+				<p class="version-color">Install <a class="version-color" href="https://addons.mozilla.org/en-US/firefox/addon/flash-videodownloader">"Flash Video Downloader"</a> Firefox addon to get video links</p>
 
 				<form class="needs-validation">
-					<div class="row">
-						<div class="col-md-3 mb-3">
-							<label class="font-weight-bold" for="name">File name</label>
-							<input type="text" class="form-control" id="name" placeholder="Name" required>
-
-							<div class="invalid-feedback">
-								Valid first name is required.
+						<div class="row align-items-center no-gutters text-right">
+								<div class="col-auto my-2 mr-3">
+								<label class="input-label" for="name">File name</label>
+									</div>	
+								<div class="col-2 my-2 mr-3">
+									<input type="text" class="form-control form-control-sm" id="name" placeholder="Name" required>
+									<div class="invalid-feedback">
+										Valid file name is required.
+									</div>
+								</div>
+																		
+							  <div class="col-auto my-2 mr-3"><label class="input-label" for="lastName">Link</label></div>
+							  <div class="col w-100 my-2 mr-3">
+									<input type="text" class="form-control form-control-sm" id="link" placeholder="Link" required>
+									<div class="invalid-feedback">
+										Valid link is required.
+									</div>
+								</div>		
+							  <div class="col-auto my-2 mr-0 text-right">
+									<button id="none"  class="btn btn-sm btn-secondary bottom-column text-nowrap"  onclick="addJob()">Add download</button>
+							  </div>
 							</div>
-						</div>
-						<div class="col-md-9 mb-3">
-							<label class="font-weight-bold" for="link">Video link</label>
-							<input type="text" class="form-control" id="link" placeholder="Link" required>
-							<div class="invalid-feedback">
-								Valid last name is required.
-							</div>
-						</div>
-					</div>
-				
-					<div class="d-flex">
-						<div class="pr-2">
-							<button type="submit" class="btn btn-secondary" onclick="AddJob()">
-								Add download</button>
-						</div>
-						<div class="pr-2">
-							<button type="button" class="btn btn-secondary" onclick="OpenWorkingFolder()">
-								Open working folder</button>
-						</div>
-					</div>
 
+							<div class="row align-items-center no-gutters text-right">
+								<div class="col-sm-auto my-2 mr-3">
+									<label class="input-label" for="">Resolution</label>
+								</div>	
+								<div class="col-sm-auto my-2 mr-3">
+									<div class="input-group" id="myDropdown">
+										<input type="text" class="form-control form-control-sm" style="min-width: 90px; max-width: 90px" id="resinput" readonly >
+										<div class="input-group-append">
+										<button type="button" class="btn btn-sm btn-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" ></button>
+										<div class="dropdown-menu dropdown-menu-sm dropdown-menu-right">
+											<a class="dropdown-item" href="#" id="action-1" name="1">Highest</a>
+											<a class="dropdown-item" href="#" id="action-2" name="1920">1920x1080</a>
+											<a class="dropdown-item" href="#" id="action-3" name="1280">1280x720</a>
+											<a class="dropdown-item" href="#" id="action-4" name="960">960x540</a>
+											<a class="dropdown-item" href="#" id="action-5" name="640">640x360</a>
+											<a class="dropdown-item" href="#" id="action-6" name="0">Lowest</a>
+										</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-sm-auto my-2 mr-3">
+									<label class="input-label" for="dir">Working folder</label>	
+								</div>
+								<div class="col-sm w-100 my-2 mr-3">
+									<div class="input-group">
+									<input type="text" class="form-control form-control-sm" style="min-width: 100px" id="dir" readonly>
+									<div class="input-group-append">
+									<button class="btn btn-sm btn-secondary" type="button" onclick="selectWorkingFolder()" aria-describedby="dir" ><img src="res/icon-search.png"/></button>
+									</div>
+									</div>
+								</div>
+								<div class="col-sm-auto my-2 mr-0 text-right">
+									<button type="button" class="btn btn-sm btn-secondary text-nowrap" onclick="openWorkingFolder()">Open working folder</button>
+								</div>
+							</div>
 				</form>
 			</div>
 		</div>
@@ -107,7 +136,30 @@
 			</tbody>
 		</table>
 	</div>
+	<div class="container common">
 
+		<table class="table table-striped table-curved">
+			<thead class="">
+				<tr>
+					<th scope="col">Statistics</th>
+					<th scope="col">Action</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>
+						<span class="text-nowrap">Total items: <span class="highlight" id="totalitems">0</span>,</span>
+						<span class="text-nowrap">Download items: <span class="highlight" id="okitems">0</span>,</span>
+						<span class="text-nowrap">Errors: <span class="highlight" id="erroritems">0</span>,</span>
+						<span class="text-nowrap">Total size: <span class="highlight" id="totalsize">0</span></span>
+					</td>
+					<td class="button-cell"><button type="button" class="text-nowrap btn btn-sm btn-secondary"
+							onclick="removeJobs()">Remove all</button></td>
+				</tr>
+
+			</tbody>
+		</table>
+	</div>
 
 	<div class="modal fade" tabindex="-1" role="dialog" id="modalAbout">
 		<div class="modal-dialog" role="document">
@@ -128,6 +180,20 @@
 
 </body>
 <style>
+	.input-label {
+		/*font-weight: bold;*/
+		margin-bottom: 0 !important;
+	}
+
+	.button-cell {
+    	width: 1px;
+		vertical-align: middle;
+	}
+
+	.highlight {
+		font-weight: bold;
+	}
+
 	.header {
 		font-family: 'Source Sans Pro', sans-serif;
 		font-size: 24px;
@@ -181,6 +247,9 @@
 	.table-curved> :last-child> :last-child> :last-child {
 		border-radius: 0 0 4px 0;
 	}
+	.input-group {
+  display:inline-flex
+}
 </style>
 
 <script>
@@ -205,31 +274,88 @@
 		xhttp.send(send);
 	}
 
-	function RemoveJob(id) {
+	function removeJob(id) {
 		request("DELETE", "/jobs/" + id)
 	}
 
-	function AddJob() {
-		var name = encodeURIComponent(document.getElementById("name").value);
-		var link = encodeURIComponent(document.getElementById("link").value);
+	function removeJobs() {
+		request("DELETE", "/jobs")
+	}
+
+	function addJob() {
+		var name = encodeURIComponent($("#name").val());
+		var link = encodeURIComponent($("#link").val());
 
 		request("POST", "/jobs?name=" + name + "&link=" + link)
 		return false
 	}
 
-	function GetJobs() {
+	function getJobs() {
 		request("GET", "/jobs", "", fillJobTable)
 	}
 
-	function Poll() {
-		GetJobs()
-		setTimeout("Poll()", 1000)
-	}
-	//function append()
+	var active = 1
+	const MAX_ITEM_COUNT = 8
 
+	function init() {
+		request("GET", "/dir", "", function (text) {
+			var obj = JSON.parse(text);
+			$("#dir").val(obj.dir);
+		})
+		request("GET", "/resolution", "", function (text) {
+			var obj = JSON.parse(text);
+				for (i = 1; i < MAX_ITEM_COUNT; i++) {
+				if ($("#action-" + i).attr("name") == obj.value) {
+					active = i
+					$("#resinput").val($("#action-" + i).html())
+					break
+				}	
+			}
+		})
+		poll()
+	}
+
+	function poll() {
+		getJobs()
+		setTimeout("poll()", 1500)
+	}
+
+	const STATUS_QUEUED = 0;
+	const STATUS_IN_PROGRESS = 1;
+	const STATUS_OK = 2;
+	const STATUS_ERROR = 3;
+
+	const QUALITY_MIN = 0
+	const QUALITY_MAX = 1
+
+	function createStat() {
+		var obj = new Object
+		obj.totalItems = 0;
+    	obj.totalSize = 0;
+		obj.okItems = 0;
+		obj.errorItems = 0;
+		return obj
+	}
+	function updateStat(stat, obj) {
+		stat.totalItems++;
+    	stat.totalSize += obj.filesize;
+		if (obj.status == STATUS_OK)
+			stat.okItems++;
+		if (obj.status == STATUS_ERROR)
+			stat.errorItems++;
+	}
+	function showStat(stat) {
+		$("#totalitems").html(stat.totalItems)
+		$("#okitems").html(stat.okItems)
+		$("#erroritems").html(stat.errorItems)
+		$("#totalsize").html(formatBytes(stat.totalSize, 1))
+	}
 	function fillJobTable(text) {
+		var stat = createStat()
+
 		if (text == "") {
-			document.getElementById("tbody").innerHTML = "";
+			$("#tbody").html("")
+			showStat(stat)
 			return
 		}
 		var obj = JSON.parse(text);
@@ -239,7 +365,7 @@
 			s += '<tr>'
 			s += '<th scope="row">' + obj[n].id + '</th>'
 			s += '<td>'
-			if (obj[n].status == 2)
+			if (obj[n].status == STATUS_OK)
 				s += '<a href="file://' + obj[n].file + '" onclick="openFile(this)">' + obj[n].name + '</a>'
 			else
 				s += obj[n].name
@@ -251,42 +377,104 @@
 				info.push(obj[n].resolution)
 			if (obj[n].length != "")
 				info.push(obj[n].length)
-			if (obj[n].filesize != "")
-				info.push(obj[n].filesize)
+			if (obj[n].filesize > 0)
+				info.push(formatBytes(obj[n].filesize))
 			s += '<td>' + info.join(", ") + '</td>'
 			s += '<td>' + obj[n].timestamp + '</td>'
-			s += '<td style="width: 10%">';
-			if (obj[n].status != 1)
-				s += '<button type="button" class="btn btn-secondary" onclick="RemoveJob(' + obj[n].id + ')">Remove</button>'
+			s += '<td class="button-cell">';
+			if (obj[n].status != STATUS_IN_PROGRESS)
+				s += '<button type="button" class="btn btn-sm btn-secondary" onclick="removeJob(' + obj[n].id + ')">Remove</button>'
 			s += '</td>'
 			s += '</tr>'
 			content = s + content
+			updateStat(stat, obj[n])
 		}
-		document.getElementById("tbody").innerHTML = content;
+		$("#tbody").html(content);
+		showStat(stat)
 	}
 
 	function getStatus(status) {
 		switch (status) {
-			case 0: return '<svg class="mr-2" width="16" height="16" ><use href="#grey"/></svg>queued';
-			case 1: return '<svg class="mr-2" width="16" height="16" ><use href="#yellow"/></svg>in progress';
-			case 2: return '<svg class="mr-2" width="16" height="16" ><use href="#green"/></svg>success';
-			case 3: return '<svg class="mr-2" width="16" height="16" ><use href="#red"/></svg>error';
+			case STATUS_QUEUED: 
+				return '<svg class="mr-2" width="16" height="16" ><use href="#grey"/></svg>queued';
+			case STATUS_IN_PROGRESS: 
+				return '<svg class="mr-2" width="16" height="16" ><use href="#yellow"/></svg>in progress';
+			case STATUS_OK: 
+				return '<svg class="mr-2" width="16" height="16" ><use href="#green"/></svg>success';
+			case STATUS_ERROR: 
+				return '<svg class="mr-2" width="16" height="16" ><use href="#red"/></svg>error';
 		}
 		return ""
 	}
 
+	function formatBytes(bytes, decimals = 2) {
+		if (bytes === 0) 
+			return '0 Bytes';
+
+		const k = 1024;
+		const dm = decimals < 0 ? 0 : decimals;
+		const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+		const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+		return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+	}
+
 	function openFile(path) {
-		request("GET", "/file?path=" + path.href.slice(7))
+		request("GET", "/file/open?path=" + path.href.slice(7))
 		return false
 	}
-	function OpenWorkingFolder() {
-		request("GET", "/folder")
+	function openWorkingFolder() {
+		request("GET", "/dir/open")
 		return false
 	}
+	function selectWorkingFolder() {
+		request("GET", "/dir/select", "", function(text) { 
+			var obj = JSON.parse(text);
+			$("#dir").val(obj.dir) 
+			})
+		return false
+	}
+
 	function showAbout() {
 		$('#modalAbout').modal('show');
 		return false;
 	}
-</script>
+	
+	$(document).ready(
+		function () {
+			var i;
+			$("#myDropdown").on("show.bs.dropdown", function (event) {
+				for (i = 1; i < MAX_ITEM_COUNT; i++)
+					$("#action-" + i).removeClass("active");
+				$("#action-" + active).addClass("active");
+			})
 
+			for (i = 1; i < MAX_ITEM_COUNT; i++) {
+				$("#action-" + i).mousedown(function (e) {
+					na = parseInt(e.target.id.slice(-1));
+					if (na != active) {
+						$("#action-" + active).removeClass("active");
+					}
+				})
+			}
+
+			for (i = 1; i < MAX_ITEM_COUNT; i++) {
+				$("#action-" + i).contextmenu(function (e) {
+					na = parseInt(e.target.id.slice(-1));
+					if (na != active) {
+						$("#action-" + active).removeClass("active");
+					}
+				})
+			}
+
+			for (i = 1; i < MAX_ITEM_COUNT; i++) {
+				$("#action-" + i).click(function (e) {
+					$("#resinput").val(e.target.innerHTML)
+					active = parseInt(e.target.id.slice(-1))
+					request("PUT", "/resolution?value=" + e.target.name, "")
+				})
+			}
+		})
+</script>
 </html>

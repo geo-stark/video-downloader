@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -43,7 +44,7 @@ type Job struct {
 	Length     string    `json:"length"` // human-readbale
 	Resolution string    `json:"resolution"`
 	File       string    `json:"file"`
-	FileSize   string    `json:"filesize"` // human-readbale
+	FileSize   int64     `json:"filesize"` // human-readbale
 }
 
 type Result struct {
@@ -58,6 +59,8 @@ var Lock sync.Mutex
 var Channel = make(chan int, MaxQueueSize)
 var Port = DefaultPort
 var Dir = "data"
+var QualityVideo = QualityMax
+var QualityAudio = QualityMax
 
 func checkCommandExists() {
 	commands := []string{"ffmpeg", "zenity", "xdg-open", "caja", "notify-send"}
@@ -89,6 +92,33 @@ func openFolder(w http.ResponseWriter, r *http.Request) {
 	cmd.Run()
 }
 
+func getFolder(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	str, _ := filepath.Abs(Dir)
+	fmt.Fprintf(w, `{"dir" : "%v"}`, str)
+}
+
+func selectFolder(w http.ResponseWriter, r *http.Request) {
+	dir, _ := filepath.Abs(Dir)
+	cmd := exec.Command("zenity", "--file-selection", "--directory",
+		"--filename="+dir+"/")
+
+	if data, err := cmd.CombinedOutput(); err == nil {
+		Dir = strings.TrimRight(string(data), "\r\n \t")
+		log.Printf("%v", Dir)
+	}
+	fmt.Fprintf(w, `{"dir" : "%v"}`, Dir)
+}
+
+func getResolution(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, `{"value" : "%v"}`, QualityVideo)
+}
+
+func setResolution(w http.ResponseWriter, r *http.Request) {
+	QualityVideo, _ = strconv.Atoi(r.FormValue("value"))
+}
+
 func getJobs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(Jobs)
@@ -115,9 +145,22 @@ func removeJob(w http.ResponseWriter, r *http.Request) {
 	ID, err := strconv.Atoi(params["id"])
 	if err == nil {
 		Lock.Lock()
-		delete(Jobs, ID)
+		item := Jobs[ID]
+		if item.Status != Progress {
+			delete(Jobs, ID)
+		}
 		Lock.Unlock()
 	}
+}
+
+func removeJobs(w http.ResponseWriter, r *http.Request) {
+	Lock.Lock()
+	for ID, item := range Jobs {
+		if item.Status != Progress {
+			delete(Jobs, ID)
+		}
+	}
+	Lock.Unlock()
 }
 
 func addJob(w http.ResponseWriter, r *http.Request) {
@@ -154,9 +197,9 @@ func grab(item *Job) {
 	var grabber VideoGrabber
 
 	grabber.SetOptions(Options{
-		PrefferedVideoWidth: 1280,
-		PrefferedAudioRate:  4800,
-		WorkingDir:          Dir})
+		QualityVideoWidth: QualityVideo,
+		QualityAudioRate:  QualityAudio,
+		WorkingDir:        Dir})
 	grabber.OpenLink(item.Link, item.Name)
 	if err := grabber.FetchInfo(); err != nil {
 		item.Status = Error
@@ -226,17 +269,26 @@ func main() {
 	wg.Add(WorkerCount)
 
 	router := mux.NewRouter()
-	router.HandleFunc("/folder", openFolder).Methods("GET")
-	router.HandleFunc("/file", openFile).Methods("GET")
+	router.HandleFunc("/dir", getFolder).Methods("GET")
+	router.HandleFunc("/dir/open", openFolder).Methods("GET")
+	router.HandleFunc("/dir/select", selectFolder).Methods("GET")
+
+	router.HandleFunc("/resolution", getResolution).Methods("GET")
+	router.HandleFunc("/resolution", setResolution).Methods("PUT")
+
+	router.HandleFunc("/file/open", openFile).Methods("GET")
+
 	router.HandleFunc("/jobs", getJobs).Methods("GET")
 	router.HandleFunc("/jobs/{id}", getJob).Methods("GET")
 	router.HandleFunc("/jobs", addJob).Methods("POST")
 	router.HandleFunc("/jobs/{id}", removeJob).Methods("DELETE")
+	router.HandleFunc("/jobs", removeJobs).Methods("DELETE")
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "www/index.html")
 	})
 	router.PathPrefix("/css").Handler(http.FileServer(http.Dir("www")))
+	router.PathPrefix("/res").Handler(http.FileServer(http.Dir("www")))
 
 	log.Print("server started...")
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", Port), router))
@@ -244,4 +296,5 @@ func main() {
 
 // TODO:
 // add pid file protection
-// cancel item
+// add resolution select closest to set one
+//

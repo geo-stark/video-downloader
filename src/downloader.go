@@ -12,10 +12,10 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 
-	"code.cloudfoundry.org/bytefmt"
 	"github.com/goware/urlx"
 )
 
@@ -65,9 +65,9 @@ type Clip struct {
 }
 
 type Options struct {
-	PrefferedVideoWidth int
-	PrefferedAudioRate  int
-	WorkingDir          string
+	QualityVideoWidth int
+	QualityAudioRate  int
+	WorkingDir        string
 }
 
 type VideoGrabber struct {
@@ -84,10 +84,13 @@ type VideoGrabber struct {
 	videoIndex int
 	audioIndex int
 	file       string
-	fileSize   string
+	fileSize   int64
 }
 
 const RetryCount = 2
+
+const QualityMin = 0
+const QualityMax = 1
 
 //const PrefferedVideoWidth = 1280
 //const PrefferedAudioRate = 48000
@@ -189,33 +192,45 @@ func durationfmt(duration int) string {
 
 func (this *VideoGrabber) loadPlaylist() {
 	audioIndex := -1
-	audioMaxRateIndex := 0
-	for index, i := range this.clip.Audio {
-		if i.SampleRate == this.opts.PrefferedAudioRate {
-			audioIndex = index
-			break
+	if len(this.clip.Audio) > 0 {
+		sort.Slice(this.clip.Audio,
+			func(i, j int) bool { return this.clip.Audio[i].SampleRate < this.clip.Audio[j].SampleRate })
+		if this.opts.QualityAudioRate == QualityMin {
+			audioIndex = 0
+		} else if this.opts.QualityAudioRate == QualityMax {
+			audioIndex = len(this.clip.Audio) - 1
+		} else {
+			for index, i := range this.clip.Audio {
+				if i.SampleRate == this.opts.QualityAudioRate {
+					audioIndex = index
+					break
+				}
+			}
+			if audioIndex < 0 {
+				audioIndex = len(this.clip.Audio) - 1
+			}
 		}
-		if i.SampleRate > this.clip.Audio[audioMaxRateIndex].SampleRate {
-			audioMaxRateIndex = index
-		}
-	}
-	if audioIndex < 0 && len(this.clip.Audio) > 0 {
-		audioIndex = audioMaxRateIndex
 	}
 
 	videoIndex := -1
-	videoMaxWidthIndex := 0
-	for index, i := range this.clip.Video {
-		if i.Width == this.opts.PrefferedVideoWidth {
-			videoIndex = index
-			break
+	if len(this.clip.Video) > 0 {
+		sort.Slice(this.clip.Video,
+			func(i, j int) bool { return this.clip.Video[i].Width < this.clip.Video[j].Width })
+		if this.opts.QualityVideoWidth == QualityMin {
+			videoIndex = 0
+		} else if this.opts.QualityVideoWidth == QualityMax {
+			videoIndex = len(this.clip.Video) - 1
+		} else {
+			for index, i := range this.clip.Video {
+				if i.Width == this.opts.QualityVideoWidth {
+					videoIndex = index
+					break
+				}
+			}
+			if videoIndex < 0 {
+				videoIndex = len(this.clip.Video) - 1
+			}
 		}
-		if i.Width > this.clip.Video[videoMaxWidthIndex].Width {
-			videoMaxWidthIndex = index
-		}
-	}
-	if videoIndex < 0 && len(this.clip.Video) > 0 {
-		videoIndex = videoMaxWidthIndex
 	}
 
 	this.audioIndex = audioIndex
@@ -238,6 +253,8 @@ func (this *VideoGrabber) OpenLink(link, name string) {
 	this.link = link
 	this.name = name
 }
+
+/*
 func test() error {
 	URL := "https://static.fazarosta.com/media/uploads/Ochisheniye_ot_programm[6_modul].mp3"
 	//URL := "https://r1---sn-nx8xon3t-83vl.googlevideo.com/videoplayback?expire=1562646445&ei=TcMjXZynDcOgyAXc_Ym4DA&ip=46.39.228.66&id=o-AHAbUMDusLu_BnyEiqsz89Vav7U2vkKr_SWAmG_CVfai&itag=22&source=youtube&requiressl=yes&mm=31%2C29&mn=sn-nx8xon3t-83vl%2Csn-n8v7kn76&ms=au%2Crdu&mv=m&mvi=0&pl=23&initcwndbps=1627500&mime=video%2Fmp4&ratebypass=yes&dur=233.546&lmt=1562585734467288&mt=1562624742&fvip=1&c=WEB&txp=3516222&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cmime%2Cratebypass%2Cdur%2Clmt&sig=ALgxI2wwRgIhAImg-gZJB3BmqIXcCIi0Ri90NPOrXXJCv7CTNnEoi45ZAiEAqtFxVxyr_KwRD-tOGro9Wk46WTfcrjt2BZaiA9QwAWE%3D&lsparams=mm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Cinitcwndbps&lsig=AHylml4wRQIgMofi0M0Rej8O_sNJ3MC0W3urSfbNVV54_ikYRLOerKUCIQCr-iQKeGABu_OpxhZ2AzeXvvkkDVKMSxaXP-aBItBEnA%3D%3D"
@@ -263,7 +280,7 @@ func test() error {
 	}
 
 	return nil
-}
+}*/
 
 func (this *VideoGrabber) FetchInfo() error {
 	log.Print("process url:", this.link)
@@ -310,7 +327,8 @@ func (this *VideoGrabber) FetchInfo() error {
 		} else {
 			this.extention = ".mp4"
 		}
-		this.fileSize = bytefmt.ByteSize(uint64(resp.ContentLength))
+		this.fileSize = resp.ContentLength
+		//bytefmt.ByteSize(uint64(resp.ContentLength))
 	}
 	return nil
 }
@@ -359,7 +377,8 @@ func (this *VideoGrabber) FetchData() error {
 		}
 	}
 	if info, err := os.Stat(this.file); err == nil {
-		this.fileSize = bytefmt.ByteSize(uint64(info.Size()))
+		this.fileSize = info.Size()
+		//bytefmt.ByteSize(uint64(info.Size()))
 	}
 	return nil
 }
